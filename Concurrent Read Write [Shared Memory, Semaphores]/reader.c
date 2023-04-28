@@ -143,8 +143,8 @@ int main(int argc, char *argv[])
             }
             sem_post(&shared_memory->statsMutex); // release the statsMutex
 
-            // print & log waitDuration in microseconds
-            sprintf(msg, "Reader for rec id %d waited for %f microseconds\n", recid, waitDuration);
+            // print & log waitDuration in seconds
+            sprintf(msg, "Reader for rec id %d waited for %f seconds\n", recid, waitDuration);
             logger(msg, shared_memory);
 
             /* Read the record by traversing file */
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
                     shared_memory->totalReadersDuration += totalProcessDuration;
                     sem_post(&shared_memory->statsMutex); // release the statsMutex
 
-                    sprintf(msg, "Reader for rec id %d found record in %f microseconds\n", recid, totalProcessDuration);
+                    sprintf(msg, "Reader for rec id %d found record in %f seconds\n", recid, totalProcessDuration);
                     logger(msg, shared_memory);
 
                     // output
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
                 shared_memory->totalReadersDuration += totalProcessDuration;
                 sem_post(&shared_memory->statsMutex); // release the statsMutex
 
-                sprintf(msg, "Reader for rec id %d did not find record in %f microseconds\n", recid, totalProcessDuration);
+                sprintf(msg, "Reader for rec id %d did not find record in %f seconds\n", recid, totalProcessDuration);
                 logger(msg, shared_memory);
             }
 

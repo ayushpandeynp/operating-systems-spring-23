@@ -19,7 +19,7 @@
 int main(int argc, char *argv[])
 {
     /* Parsing the commands */
-    /* Usage: ./write -f filename -l recid -d time -s shmid */
+    /* Usage: ./writer -f filename -l recid -d time -s shmid -p pid */
     int opt;
     char *filename = NULL;
     int recid = 0;
@@ -139,6 +139,9 @@ int main(int argc, char *argv[])
 
     if (found)
     {
+        // record current timestamp to avoid user input delay in stats
+        time_t userInputT1 = time(NULL);
+
         // show current mark for every subject and then ask if they want to update
         int j;
         for (j = 0; j < 8; j++)
@@ -164,6 +167,10 @@ int main(int argc, char *argv[])
             }
         }
 
+        time_t userInputT2 = time(NULL);
+
+        double userInputDelay = difftime(userInputT2, userInputT1);
+
         // new gpa
         record.gpa = 0;
         for (j = 0; j < 8; j++)
@@ -179,14 +186,14 @@ int main(int argc, char *argv[])
 
         sleep(timeDelay);
 
-        // total process duration
-        double totalProcessDuration = difftime(time(NULL), t1);
+        // total process duration excluding user input delay
+        double totalProcessDuration = difftime(time(NULL), t1) - userInputDelay;
 
         sem_wait(&shared_memory->statsMutex); // wait for statsMutex to protect the stats variables
         shared_memory->totalWritersDuration += totalProcessDuration;
         sem_post(&shared_memory->statsMutex); // release the statsMutex
 
-        sprintf(msg, "Writer for rec id %d found record in %f microseconds\n", recid, totalProcessDuration);
+        sprintf(msg, "Writer for rec id %d completed processing record in %f seconds\n", recid, totalProcessDuration);
         logger(msg, shared_memory);
     }
     else
@@ -196,7 +203,7 @@ int main(int argc, char *argv[])
 
         // total process duration
         double totalProcessDuration = difftime(time(NULL), t1);
-        sprintf(msg, "Writer for rec id %d did not find any record in %f microseconds\n", recid, totalProcessDuration);
+        sprintf(msg, "Writer for rec id %d did not find any record in %f seconds\n", recid, totalProcessDuration);
         logger(msg, shared_memory);
 
         perror("[ERROR]: Record not found");
